@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import Message from "./Message";
 import PromptBox from "./PromptBox";
 import { getMessages, sendMessageToChat } from "../lib/api";
+import { useAuth } from "@clerk/nextjs";
 import { ArrowDown } from "lucide-react";
 
 
@@ -39,22 +40,27 @@ export default function ChatWindow({
   const [showCustomBotModal, setShowCustomBotModal] = useState(false);
 
   // Fetch messages when chatId changes
+  const { getToken } = useAuth();
   useEffect(() => {
-    if (chatId) {
-      getMessages(chatId)
-        .then((msgs) => {
-          setMessages(msgs);
-          setPendingUserMessage(null); // Clear pending user message when backend messages arrive
-        })
-        .catch(() => {
-          setMessages([]);
-          setPendingUserMessage(null);
-        });
-    } else {
-      setMessages([]);
-      setPendingUserMessage(null);
+    async function fetchMessages() {
+      if (chatId) {
+        const token = await getToken();
+        getMessages(chatId, token)
+          .then((msgs) => {
+            setMessages(msgs);
+            setPendingUserMessage(null);
+          })
+          .catch(() => {
+            setMessages([]);
+            setPendingUserMessage(null);
+          });
+      } else {
+        setMessages([]);
+        setPendingUserMessage(null);
+      }
     }
-  }, [chatId]);
+    fetchMessages();
+  }, [chatId, getToken]);
 
   // Auto-scroll to bottom ONLY when a new assistant message is added (like ChatGPT)
   const prevMessagesLength = useRef(0);
@@ -115,12 +121,13 @@ export default function ChatWindow({
     }
     setIsLoading(true);
     try {
+      const token = await getToken();
       if (!chatId) {
         if (onFirstPrompt) {
           await onFirstPrompt(content);
           setTimeout(async () => {
             if (chatId) {
-              const msgs = await getMessages(chatId);
+              const msgs = await getMessages(chatId, token);
               setMessages(msgs);
               setPendingUserMessage(null);
               setIsLoading(false);
@@ -130,11 +137,11 @@ export default function ChatWindow({
         return;
       }
       if (finalContent.startsWith("data:image")) {
-        await sendMessageToChat(chatId, finalContent, "image", model);
+        await sendMessageToChat(chatId, finalContent, token, "image", model);
       } else {
-        await sendMessageToChat(chatId, finalContent, "text", model);
+        await sendMessageToChat(chatId, finalContent, token, "text", model);
       }
-      const msgs = await getMessages(chatId);
+      const msgs = await getMessages(chatId, token);
       setMessages(msgs);
       setPendingUserMessage(null);
       setIsLoading(false);
@@ -159,7 +166,8 @@ export default function ChatWindow({
       return newMessages;
     });
     try {
-      const res = await sendMessageToChat(chatId, newContent, "text", model);
+      const token = await getToken();
+      const res = await sendMessageToChat(chatId, newContent, token, "text", model);
       const assistantContent = res.assistant?.content || res.message?.content || res.content || "";
       const assistantMsg = { id: crypto.randomUUID(), role: "assistant" as "assistant", content: assistantContent };
       setMessages((prev) => prev.concat(assistantMsg));

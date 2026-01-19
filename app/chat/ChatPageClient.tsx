@@ -9,9 +9,11 @@ import { ToastProvider, useToast } from "../../components/ToastProvider";
 import Spinner from "../../components/Spinner";
 import { useState, useEffect } from "react";
 import { createChat, getChats, getProfile, sendMessageToChat, getMessages } from "../../lib/api";
+import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
 function ChatPageClient() {
+  const { getToken } = useAuth();
   const router = useRouter();
   // No authentication needed
   const [profileChecked, setProfileChecked] = useState(true);
@@ -50,7 +52,8 @@ function ChatPageClient() {
   useEffect(() => {
     async function loadChats() {
       try {
-        const chats = await getChats();
+        const token = await getToken();
+        const chats = await getChats(token);
         setChats(chats);
       } catch (e) {
         setError("Failed to load chats");
@@ -59,7 +62,7 @@ function ChatPageClient() {
       }
     }
     loadChats();
-  }, []);
+  }, [getToken]);
 
   // Custom bot modal open state (shared)
   const [showCustomBotModal, setShowCustomBotModal] = useState(false);
@@ -68,17 +71,18 @@ function ChatPageClient() {
   const { showToast } = useToast();
   async function handleNewChat(firstMessage?: string) {
     try {
-      const chat = await createChat();
+      const token = await getToken();
+      const chat = await createChat(token);
       setChats((prev) => [chat, ...prev]);
       showToast("New chat created!", "success");
       if (typeof firstMessage === "string" && firstMessage.trim()) {
         if (firstMessage.startsWith("data:image")) {
-          await sendMessageToChat(chat.id, firstMessage, "image");
+          await sendMessageToChat(chat.id, firstMessage, token, "image");
         } else {
-          await sendMessageToChat(chat.id, firstMessage);
+          await sendMessageToChat(chat.id, firstMessage, token);
         }
         if (chat.id) {
-          await getMessages(chat.id);
+          await getMessages(chat.id, token);
         }
       }
       setActiveChatId(chat.id);
@@ -90,7 +94,8 @@ function ChatPageClient() {
   async function handleFirstPrompt(prompt: string) {
     if (!activeChatId) return;
     setTimeout(async () => {
-      const updatedChats = await getChats();
+      const token = await getToken();
+      const updatedChats = await getChats(token);
       setChats(updatedChats);
     }, 300);
   }
