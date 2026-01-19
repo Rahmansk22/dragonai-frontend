@@ -1,6 +1,7 @@
+import { getToken } from "@clerk/nextjs/server";
 // Mark onboarding as complete
-export async function completeOnboarding(token: string) {
-    console.log('[API] completeOnboarding token:', token);
+export async function completeOnboarding() {
+  const token = await getToken();
   const url = `${API_BASE_URL}/api/auth/profile/onboarding`;
   const res = await fetch(url, {
     method: "PATCH",
@@ -21,11 +22,15 @@ export async function completeOnboarding(token: string) {
 // Use sendMessageToChat instead for chat functionality
 
 export async function createChat() {
+  const token = await getToken();
   const url = `${API_BASE_URL}/api/chats`;
   const userId = localStorage.getItem("userId") || "demo-user";
   const res = await fetch(url, {
     method: "POST",
-    headers: { "x-user-id": userId },
+    headers: {
+      "x-user-id": userId,
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify({}),
   });
   if (!res.ok) throw new Error("Failed to create chat");
@@ -33,26 +38,35 @@ export async function createChat() {
 }
 
 export async function getChats() {
+  const token = await getToken();
   const url = `${API_BASE_URL}/api/chats`;
   const userId = localStorage.getItem("userId") || "demo-user";
   const res = await fetch(url, {
-    headers: { "x-user-id": userId },
+    headers: {
+      "x-user-id": userId,
+      Authorization: `Bearer ${token}`,
+    },
   });
   if (!res.ok) throw new Error("Failed to fetch chats");
   return res.json();
 }
 
 export async function getMessages(chatId: string) {
+  const token = await getToken();
   const url = `${API_BASE_URL}/api/chats/${chatId}/messages`;
   const userId = localStorage.getItem("userId") || "demo-user";
   const res = await fetch(url, {
-    headers: { "x-user-id": userId },
+    headers: {
+      "x-user-id": userId,
+      Authorization: `Bearer ${token}`,
+    },
   });
   if (!res.ok) throw new Error("Failed to fetch messages");
   return res.json();
 }
 
 export async function sendMessageToChat(chatId: string, content: string, type: "text" | "image" = "text", model: string = "gemini") {
+  const token = await getToken();
   const url = `${API_BASE_URL}/api/chats/${chatId}/messages`;
   const userId = localStorage.getItem("userId") || "demo-user";
   const body: any = type === "image"
@@ -64,6 +78,7 @@ export async function sendMessageToChat(chatId: string, content: string, type: "
     headers: {
       "Content-Type": "application/json",
       "x-user-id": userId,
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(body),
   });
