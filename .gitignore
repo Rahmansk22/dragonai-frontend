@@ -2,3 +2,8 @@ node_modules
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# Ignore Next.js build output and cache
+.next/
+build/
+.cache/
