@@ -3,8 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 
 import { Paperclip, Image as ImageIcon, Plus, Mic, BotMessageSquare, BotOff } from 'lucide-react';
-import { FaMeta } from "react-icons/fa6";
-import { FcGoogle } from "react-icons/fc";
+
 
 export default function PromptBox({
   onSend,
@@ -19,6 +18,7 @@ export default function PromptBox({
   onToggleCustomMode: () => void,
   onOpenCustomBotModal: () => void
 }) {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [value, setValue] = useState("");
   const [selectedModel, setSelectedModel] = useState<string>("groq");
@@ -138,7 +138,7 @@ export default function PromptBox({
       setSelectedImage(base64);
       setShowImagePreview(true);
       try {
-        const res = await fetch("/api/image/analyze", {
+        const res = await fetch(`${API_BASE_URL}/api/image/analyze`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ image: base64 }),
@@ -193,7 +193,7 @@ export default function PromptBox({
                   setImageGenLoading(true);
                   setGeneratedImage("");
                   try {
-                    const res = await fetch("/api/image/generate", {
+                    const res = await fetch(`${API_BASE_URL}/api/image/generate`, {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ prompt: imageGenPrompt, width: 512, height: 512 }),

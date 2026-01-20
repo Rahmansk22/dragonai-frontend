@@ -128,6 +128,11 @@ export default function Page() {
         </motion.div>
       </motion.div>
     </motion.section>
+    {/* Footer attribution */}
+    <footer className="bg-[#0a0e17] border-t border-[#1a2130] py-6 text-center text-sm text-[#8e95a3]">
+      <p className="font-medium text-white">Dragon AI</p>
+      <p>Built and maintained by Team Dragon AI.</p>
+    </footer>
     </>
   );
 }
