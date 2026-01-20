@@ -1,5 +1,6 @@
 
 "use client";
+export const dynamic = "force-dynamic";
 
 import ChatPageClient from "./ChatPageClient";
 import { ToastProvider } from "../../components/ToastProvider";

@@ -1,5 +1,6 @@
 
 "use client";
+export const dynamic = "force-dynamic";
 import { motion } from "framer-motion";
 import { Sparkles, MessageSquare, Image } from "lucide-react";
 import Link from "next/link";
