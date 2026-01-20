@@ -3,11 +3,9 @@ import { useUser, useClerk } from "../../lib/clerk";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { updateProfile } from "../../lib/profileApi";
-import { useAuth } from "@clerk/nextjs";
 import { API_BASE_URL } from "../../lib/api";
 
 export default function ProfilePage() {
-  const { getToken } = useAuth();
   const router = useRouter();
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [comingSoonMsg, setComingSoonMsg] = useState("");
@@ -126,7 +124,6 @@ export default function ProfilePage() {
         }
       }
       // Persist profile to backend with the real image URL
-      const token = await getToken();
       await updateProfile({
         userId: user?.id || "demo-user",
         name,
@@ -135,7 +132,6 @@ export default function ProfilePage() {
         username,
         language,
         region,
-        token,
       });
       setSaveStatus("Saved!");
       setEditing(false);

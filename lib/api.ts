@@ -1,11 +1,6 @@
-// Usage: In your component, use useAuth() from '@clerk/nextjs' to get the token, then pass it to these functions.
-// Example:
-// import { useAuth } from "@clerk/nextjs";
-// const { getToken } = useAuth();
-// const token = await getToken();
-// await getChats(token);
 // Mark onboarding as complete
 export async function completeOnboarding(token: string) {
+    console.log('[API] completeOnboarding token:', token);
   const url = `${API_BASE_URL}/api/auth/profile/onboarding`;
   const res = await fetch(url, {
     method: "PATCH",
@@ -15,7 +10,6 @@ export async function completeOnboarding(token: string) {
     },
     credentials: "include",
   });
-  // No server-only imports! All API functions accept token as a parameter from useAuth in components.
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`Failed to complete onboarding: ${res.status} ${text}`);
@@ -26,14 +20,14 @@ export async function completeOnboarding(token: string) {
 // Deprecated: sendMessage (single prompt, not chat history)
 // Use sendMessageToChat instead for chat functionality
 
-export async function createChat(token: string) {
+export async function createChat() {
   const url = `${API_BASE_URL}/api/chats`;
   const userId = localStorage.getItem("userId") || "demo-user";
   const res = await fetch(url, {
     method: "POST",
     headers: {
       "x-user-id": userId,
-      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
     },
     body: JSON.stringify({}),
   });
@@ -41,33 +35,27 @@ export async function createChat(token: string) {
   return res.json();
 }
 
-export async function getChats(token: string) {
+export async function getChats() {
   const url = `${API_BASE_URL}/api/chats`;
   const userId = localStorage.getItem("userId") || "demo-user";
   const res = await fetch(url, {
-    headers: {
-      "x-user-id": userId,
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { "x-user-id": userId },
   });
   if (!res.ok) throw new Error("Failed to fetch chats");
   return res.json();
 }
 
-export async function getMessages(chatId: string, token: string) {
+export async function getMessages(chatId: string) {
   const url = `${API_BASE_URL}/api/chats/${chatId}/messages`;
   const userId = localStorage.getItem("userId") || "demo-user";
   const res = await fetch(url, {
-    headers: {
-      "x-user-id": userId,
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { "x-user-id": userId },
   });
   if (!res.ok) throw new Error("Failed to fetch messages");
   return res.json();
 }
 
-export async function sendMessageToChat(chatId: string, content: string, token: string, type: "text" | "image" = "text", model: string = "gemini") {
+export async function sendMessageToChat(chatId: string, content: string, type: "text" | "image" = "text", model: string = "groq") {
   const url = `${API_BASE_URL}/api/chats/${chatId}/messages`;
   const userId = localStorage.getItem("userId") || "demo-user";
   const body: any = type === "image"
@@ -79,7 +67,6 @@ export async function sendMessageToChat(chatId: string, content: string, token: 
     headers: {
       "Content-Type": "application/json",
       "x-user-id": userId,
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(body),
   });

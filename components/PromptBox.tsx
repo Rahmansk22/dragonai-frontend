@@ -21,7 +21,7 @@ export default function PromptBox({
 }) {
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [value, setValue] = useState("");
-  const [selectedModel, setSelectedModel] = useState<string>("gemini");
+  const [selectedModel, setSelectedModel] = useState<string>("groq");
   const [showDropdown, setShowDropdown] = useState(false); // For + menu
   const [showModelDropdown, setShowModelDropdown] = useState(false); // For model selector
   const [showSetBotDialog, setShowSetBotDialog] = useState(false);
@@ -38,6 +38,39 @@ export default function PromptBox({
   const [imageAnalysis, setImageAnalysis] = useState<string>("");
   const [isImageLoading, setIsImageLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Toast notification utility
+  const showToast = (message: string) => {
+    const container = document.createElement("div");
+    container.style.position = "fixed";
+    container.style.top = "16px";
+    container.style.right = "16px";
+    container.style.zIndex = "9999";
+    container.style.background = "#1f2937";
+    container.style.color = "white";
+    container.style.padding = "12px 14px";
+    container.style.borderRadius = "10px";
+    container.style.boxShadow = "0 10px 30px rgba(0,0,0,0.35)";
+    container.style.fontSize = "14px";
+    container.style.display = "flex";
+    container.style.alignItems = "center";
+    container.style.gap = "10px";
+    const icon = document.createElement("span");
+    icon.textContent = "⚠️";
+    const msg = document.createElement("span");
+    msg.textContent = message;
+    const closeBtn = document.createElement("button");
+    closeBtn.textContent = "×";
+    closeBtn.style.background = "transparent";
+    closeBtn.style.color = "white";
+    closeBtn.style.border = "none";
+    closeBtn.style.fontSize = "16px";
+    closeBtn.style.cursor = "pointer";
+    closeBtn.onclick = () => container.remove();
+    container.append(icon, msg, closeBtn);
+    document.body.appendChild(container);
+    setTimeout(() => container.remove(), 4000);
+  };
 
   // Speech Recognition
   useEffect(() => {
@@ -133,54 +166,7 @@ export default function PromptBox({
   return (
     <>
       {/* Model selection above prompt box, aligned left */}
-      <div className="relative mx-auto w-full max-w-xl flex mb-0.5">
-        <div className="flex items-center gap-2 bg-[#242526] border border-gray-700 rounded-xl px-3 py-2 shadow-lg" style={{ maxWidth: '320px' }}>
-          <div className="relative">
-            <button
-              type="button"
-              className="flex items-center gap-2 px-2 py-1 rounded bg-gray-800 text-white border border-gray-600 text-sm min-w-[120px] pr-8 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-              onClick={() => setShowModelDropdown((v) => !v)}
-              aria-haspopup="listbox"
-              aria-expanded={showModelDropdown}
-            >
-              {selectedModel === "gemini" ? (
-                <FcGoogle size={20} title="Gemini" />
-              ) : (
-                <FaMeta size={20} color="#FFB300" title="llama" />
-              )}
-              <span>{selectedModel === "gemini" ? "Gemini" : selectedModel === "groq" ? "Llama" : selectedModel}</span>
-              <svg className="w-4 h-4 ml-auto text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/></svg>
-            </button>
-            {showModelDropdown && (
-              <ul
-                id="promptbox-model-dropup"
-                className="absolute left-0 bottom-full mb-2 w-full bg-[#242526] border border-gray-700 rounded-xl shadow-lg z-50 animate-fadeInUp"
-                style={{ minWidth: 140 }}
-                role="listbox"
-              >
-                <li
-                  className={`flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700 rounded-t-xl ${selectedModel === "gemini" ? "bg-gray-800" : ""}`}
-                  onClick={() => { setSelectedModel("gemini"); setShowModelDropdown(false); }}
-                  role="option"
-                  aria-selected={selectedModel === "gemini"}
-                >
-                  <FcGoogle size={20} title="Gemini" />
-                  <span>Gemini</span>
-                </li>
-                <li
-                  className={`flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700 rounded-b-xl ${selectedModel === "groq" ? "bg-gray-800" : ""}`}
-                  onClick={() => { setSelectedModel("groq"); setShowModelDropdown(false); }}
-                  role="option"
-                  aria-selected={selectedModel === "groq"}
-                >
-                  <FaMeta size={20} color="#FFB300" title="Llama" />
-                  <span>Llama</span>
-                </li>
-              </ul>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Model selection removed: always Groq/Llama */}
       {showImageGenModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-[#242526] border border-white/20 rounded-2xl p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto hide-scrollbar">
@@ -212,16 +198,28 @@ export default function PromptBox({
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ prompt: imageGenPrompt, width: 512, height: 512 }),
                     });
+
                     if (res.ok) {
                       const data = await res.json();
-                      setGeneratedImage(data.imageUrl);
+                      console.log("[Image Gen] Response:", data);
+                      // Backend returns { url: "..." }
+                      const imageUrl = data.url || data.imageUrl || data.image;
+                      if (imageUrl) {
+                        setGeneratedImage(imageUrl);
+                      } else {
+                        showToast("No image URL in response. Check backend logs.");
+                      }
                     } else {
                       setGeneratedImage("");
-                      alert("Image generation failed. Try again.");
+                      const errText = await res.text().catch(() => "");
+                      console.error("[Image Gen] Error response:", res.status, errText);
+                      showToast(`Image generation failed (${res.status}). Check backend logs.`);
                     }
                   } catch (err) {
                     setGeneratedImage("");
-                    alert("Error generating image. Try again.");
+                    console.error("[Image Gen] Catch error:", err);
+                    const msg = err instanceof Error ? err.message : "Error generating image. Try again.";
+                    showToast(msg);
                   } finally {
                     setImageGenLoading(false);
                   }

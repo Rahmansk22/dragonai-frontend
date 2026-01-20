@@ -53,7 +53,7 @@ function ChatPageClient() {
     async function loadChats() {
       try {
         const token = await getToken();
-        const chats = await getChats(token);
+        const chats = await getChats();
         setChats(chats);
       } catch (e) {
         setError("Failed to load chats");
@@ -72,17 +72,17 @@ function ChatPageClient() {
   async function handleNewChat(firstMessage?: string) {
     try {
       const token = await getToken();
-      const chat = await createChat(token);
+      const chat = await createChat();
       setChats((prev) => [chat, ...prev]);
       showToast("New chat created!", "success");
       if (typeof firstMessage === "string" && firstMessage.trim()) {
         if (firstMessage.startsWith("data:image")) {
-          await sendMessageToChat(chat.id, firstMessage, token, "image");
+          await sendMessageToChat(chat.id, firstMessage, "image", token);
         } else {
-          await sendMessageToChat(chat.id, firstMessage, token);
+          await sendMessageToChat(chat.id, firstMessage, "text", token);
         }
         if (chat.id) {
-          await getMessages(chat.id, token);
+          await getMessages(chat.id);
         }
       }
       setActiveChatId(chat.id);
@@ -94,10 +94,13 @@ function ChatPageClient() {
   async function handleFirstPrompt(prompt: string) {
     if (!activeChatId) return;
     setTimeout(async () => {
-      const token = await getToken();
-      const updatedChats = await getChats(token);
-      setChats(updatedChats);
-    }, 300);
+      try {
+        const updatedChats = await getChats();
+        setChats(updatedChats);
+      } catch (err) {
+        console.error("Failed to refresh chats:", err);
+      }
+    }, 500);
   }
 
   function handleSelectChat(id: string) {
