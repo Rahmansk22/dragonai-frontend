@@ -62,12 +62,17 @@ export async function sendMessageToChat(chatId: string, content: string, type: "
     ? { image: content, model }
     : { text: content, model };
   console.log("[sendMessageToChat] Sending body:", body);
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "x-user-id": userId,
+  };
+  const publicGroqKey = process.env.NEXT_PUBLIC_GROQ_API_KEY;
+  if (publicGroqKey) {
+    headers["x-groq-api-key"] = publicGroqKey.trim();
+  }
   const res = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-user-id": userId,
-    },
+    headers,
     body: JSON.stringify(body),
   });
   if (!res.ok) {
