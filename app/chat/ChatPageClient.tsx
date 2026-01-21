@@ -9,7 +9,7 @@ import { ToastProvider, useToast } from "../../components/ToastProvider";
 import Spinner from "../../components/Spinner";
 import { useState, useEffect } from "react";
 import { createChat, getChats, getProfile, sendMessageToChat, getMessages } from "../../lib/api";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
 function ChatPageClient() {
@@ -107,12 +107,13 @@ function ChatPageClient() {
     setActiveChatId(id);
   }
 
+  const { user } = useUser();
   async function handleRenameChat(id: string, newTitle: string) {
     await fetch(`/api/chats/${id}/title`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "x-user-id": "demo-user",
+        "x-user-id": user?.id || "demo-user",
       },
       body: JSON.stringify({ title: newTitle }),
     });
@@ -123,7 +124,7 @@ function ChatPageClient() {
     try {
       await fetch(`/api/chats/${id}`, {
         method: "DELETE",
-        headers: { "x-user-id": "demo-user" },
+        headers: { "x-user-id": user?.id || "demo-user" },
       });
       setChats((prev) => prev.filter((c) => c.id !== id));
       if (activeChatId === id) setActiveChatId(null);
@@ -143,7 +144,7 @@ function ChatPageClient() {
   return (
     <ToastProvider>
       <ErrorBoundary>
-        <div className="h-screen flex overflow-hidden bg-[#242526]">
+        <div className="min-h-[100dvh] pb-[env(safe-area-inset-bottom)] flex overflow-hidden bg-[#242526]" style={{ minHeight: '100svh' }}>
           {/* Sidebar overlay for mobile/tablet */}
           {sidebarOpen && windowWidth !== null && windowWidth < 1024 && (
             <div
@@ -198,7 +199,7 @@ function ChatPageClient() {
                   Dragon <span className="ml-2 font-light text-white/70">AI</span>
                 </span>
               </div>
-              <div className="flex-1 overflow-hidden p-3 lg:p-6">
+              <div className="flex-1 overflow-hidden p-3 lg:p-6" style={{ paddingBottom: windowWidth !== null && windowWidth < 640 ? 80 : undefined }}>
                 {loadingChats ? (
                   <div className="flex items-center justify-center h-full">
                     <Spinner size={48} />
