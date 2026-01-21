@@ -113,7 +113,7 @@ export default function Sidebar({
               >
                 {customBot ? 'Edit Custom Bot' : 'Create Custom Bot 🤖✨'}
               </button>
-          
+              {/* ...existing code... */}
             </div>
             <div className="flex items-center gap-2 mb-4">
               {/* Replace with a valid icon, e.g. Heroicons */}

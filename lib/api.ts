@@ -20,13 +20,13 @@ export async function completeOnboarding(token: string) {
 // Deprecated: sendMessage (single prompt, not chat history)
 // Use sendMessageToChat instead for chat functionality
 
-export async function createChat() {
+export async function createChat(userId?: string) {
   const url = `${API_BASE_URL}/api/chats`;
-  const userId = localStorage.getItem("userId") || "demo-user";
+  const id = userId || "demo-user";
   const res = await fetch(url, {
     method: "POST",
     headers: {
-      "x-user-id": userId,
+      "x-user-id": id,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({}),
@@ -35,36 +35,36 @@ export async function createChat() {
   return res.json();
 }
 
-export async function getChats() {
+export async function getChats(userId?: string) {
   const url = `${API_BASE_URL}/api/chats`;
-  const userId = localStorage.getItem("userId") || "demo-user";
+  const id = userId || "demo-user";
   const res = await fetch(url, {
-    headers: { "x-user-id": userId },
+    headers: { "x-user-id": id },
   });
   if (!res.ok) throw new Error("Failed to fetch chats");
   return res.json();
 }
 
-export async function getMessages(chatId: string) {
+export async function getMessages(chatId: string, userId?: string) {
   const url = `${API_BASE_URL}/api/chats/${chatId}/messages`;
-  const userId = localStorage.getItem("userId") || "demo-user";
+  const id = userId || "demo-user";
   const res = await fetch(url, {
-    headers: { "x-user-id": userId },
+    headers: { "x-user-id": id },
   });
   if (!res.ok) throw new Error("Failed to fetch messages");
   return res.json();
 }
 
-export async function sendMessageToChat(chatId: string, content: string, type: "text" | "image" = "text", model: string = "groq") {
+export async function sendMessageToChat(chatId: string, content: string, type: "text" | "image" = "text", model: string = "groq", userId?: string) {
   const url = `${API_BASE_URL}/api/chats/${chatId}/messages`;
-  const userId = localStorage.getItem("userId") || "demo-user";
+  const id = userId || "demo-user";
   const body: any = type === "image"
     ? { image: content, model }
     : { text: content, model };
   console.log("[sendMessageToChat] Sending body:", body);
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "x-user-id": userId,
+    "x-user-id": id,
   };
   const publicGroqKey = process.env.NEXT_PUBLIC_GROQ_API_KEY;
   if (publicGroqKey) {
@@ -80,6 +80,43 @@ export async function sendMessageToChat(chatId: string, content: string, type: "
     throw new Error(`Failed to send message: ${res.status} ${text}`);
   }
   return res.json();
+}
+
+export async function getCustomBot(userId?: string) {
+  const id = userId || "demo-user";
+  const url = `${API_BASE_URL}/api/custom-bot`;
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      "x-user-id": id,
+    },
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Failed to load custom bot: ${res.status} ${text}`);
+  }
+  const data = await res.json();
+  return data?.customBot ?? null;
+}
+
+export async function saveCustomBot(bot: { name: string; persona: string; knowledge: string }, userId?: string) {
+  const id = userId || "demo-user";
+  const url = `${API_BASE_URL}/api/custom-bot`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-user-id": id,
+    },
+    body: JSON.stringify(bot),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Failed to save custom bot: ${res.status} ${text}`);
+  }
+  const data = await res.json();
+  return data?.customBot ?? null;
 }
 
 // Get current user profile

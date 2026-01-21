@@ -22,6 +22,10 @@ export default function CustomBotModal({
       setName(customBot.name);
       setPersona(customBot.persona);
       setKnowledge(customBot.knowledge);
+    } else {
+      setName("");
+      setPersona("");
+      setKnowledge("");
     }
   }, [customBot, open]);
 

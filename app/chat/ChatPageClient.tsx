@@ -8,12 +8,11 @@ import CustomBotModal from "../../components/CustomBotModal";
 import { ToastProvider, useToast } from "../../components/ToastProvider";
 import Spinner from "../../components/Spinner";
 import { useState, useEffect } from "react";
-import { createChat, getChats, getProfile, sendMessageToChat, getMessages } from "../../lib/api";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { createChat, getChats, sendMessageToChat, getMessages, getCustomBot, saveCustomBot } from "../../lib/api";
+import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
 function ChatPageClient() {
-  const { getToken } = useAuth();
   const router = useRouter();
   // No authentication needed
   const [profileChecked, setProfileChecked] = useState(true);
@@ -24,29 +23,10 @@ function ChatPageClient() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [windowWidth, setWindowWidth] = useState<number | null>(null);
   // signOut removed
-  // Custom bot state (shared, persisted to localStorage)
+  // Custom bot state (shared, persisted via API)
   const [customBot, setCustomBot] = useState<null | { name: string; persona: string; knowledge: string }>(null);
 
-  // Load customBot from localStorage on mount
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const stored = localStorage.getItem('customBot');
-    if (stored) {
-      try {
-        setCustomBot(JSON.parse(stored));
-      } catch {}
-    }
-  }, []);
-
-  // Save customBot to localStorage whenever it changes
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (customBot) {
-      localStorage.setItem('customBot', JSON.stringify(customBot));
-    } else {
-      localStorage.removeItem('customBot');
-    }
-  }, [customBot]);
+  const { user } = useUser();
 
   // Load chats on mount with retry for mobile/slow networks
   useEffect(() => {
@@ -56,8 +36,7 @@ function ChatPageClient() {
 
       while (retries > 0) {
         try {
-          const token = await getToken();
-          const chats = await getChats();
+          const chats = await getChats(user?.id);
           setChats(chats);
           setError(null);
           setLoadingChats(false);
@@ -79,7 +58,24 @@ function ChatPageClient() {
     }
 
     loadChats();
-  }, [getToken]);
+  }, [user?.id]);
+
+  // Load custom bot from backend when user changes
+  useEffect(() => {
+    let cancelled = false;
+    async function loadCustomBot() {
+      try {
+        const bot = await getCustomBot(user?.id);
+        if (!cancelled) setCustomBot(bot);
+      } catch (err) {
+        console.error("Failed to load custom bot", err);
+      }
+    }
+    loadCustomBot();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   // Custom bot modal open state (shared)
   const [showCustomBotModal, setShowCustomBotModal] = useState(false);
@@ -88,18 +84,17 @@ function ChatPageClient() {
   const { showToast } = useToast();
   async function handleNewChat(firstMessage?: string) {
     try {
-      const token = await getToken();
-      const chat = await createChat();
+      const chat = await createChat(user?.id);
       setChats((prev) => [chat, ...prev]);
       showToast("New chat created!", "success");
       if (typeof firstMessage === "string" && firstMessage.trim()) {
         if (firstMessage.startsWith("data:image")) {
-          await sendMessageToChat(chat.id, firstMessage, "image", token);
+          await sendMessageToChat(chat.id, firstMessage, "image", "groq", user?.id);
         } else {
-          await sendMessageToChat(chat.id, firstMessage, "text", token);
+          await sendMessageToChat(chat.id, firstMessage, "text", "groq", user?.id);
         }
         if (chat.id) {
-          await getMessages(chat.id);
+          await getMessages(chat.id, user?.id);
         }
       }
       setActiveChatId(chat.id);
@@ -112,7 +107,7 @@ function ChatPageClient() {
     if (!activeChatId) return;
     setTimeout(async () => {
       try {
-        const updatedChats = await getChats();
+        const updatedChats = await getChats(user?.id);
         setChats(updatedChats);
       } catch (err) {
         console.error("Failed to refresh chats:", err);
@@ -124,7 +119,6 @@ function ChatPageClient() {
     setActiveChatId(id);
   }
 
-  const { user } = useUser();
   async function handleRenameChat(id: string, newTitle: string) {
     await fetch(`/api/chats/${id}/title`, {
       method: "PUT",
@@ -239,6 +233,7 @@ function ChatPageClient() {
                   <ChatWindow
                     chatId={activeChatId}
                     onFirstPrompt={activeChatId ? handleFirstPrompt : handleNewChat}
+                    userId={user?.id || undefined}
                     customBot={customBot}
                     setCustomBot={setCustomBot}
                     onOpenCustomBotModal={() => setShowCustomBotModal(true)}
@@ -248,9 +243,16 @@ function ChatPageClient() {
                 <CustomBotModal
                   open={showCustomBotModal}
                   onClose={() => setShowCustomBotModal(false)}
-                  onSave={(bot: { name: string; persona: string; knowledge: string }) => {
-                    setCustomBot(bot);
-                    setShowCustomBotModal(false);
+                  onSave={async (bot: { name: string; persona: string; knowledge: string }) => {
+                    try {
+                      const saved = await saveCustomBot(bot, user?.id);
+                      setCustomBot(saved);
+                      showToast("Custom bot saved", "success");
+                      setShowCustomBotModal(false);
+                    } catch (err) {
+                      console.error("Failed to save custom bot", err);
+                      showToast("Failed to save custom bot", "error");
+                    }
                   }}
                   customBot={customBot}
                 />
