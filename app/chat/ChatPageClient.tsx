@@ -144,7 +144,7 @@ function ChatPageClient() {
   return (
     <ToastProvider>
       <ErrorBoundary>
-        <div className="min-h-[100dvh] pb-[env(safe-area-inset-bottom)] flex overflow-hidden bg-[#242526]" style={{ minHeight: '100svh' }}>
+        <div style={{ height: '100dvh' }} className="flex overflow-hidden bg-[#242526]">
           {/* Sidebar overlay for mobile/tablet */}
           {sidebarOpen && windowWidth !== null && windowWidth < 1024 && (
             <div
