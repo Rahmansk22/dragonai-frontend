@@ -48,19 +48,36 @@ function ChatPageClient() {
     }
   }, [customBot]);
 
-  // Load chats on mount
+  // Load chats on mount with retry for mobile/slow networks
   useEffect(() => {
     async function loadChats() {
-      try {
-        const token = await getToken();
-        const chats = await getChats();
-        setChats(chats);
-      } catch (e) {
-        setError("Failed to load chats");
-      } finally {
-        setLoadingChats(false);
+      let retries = 3;
+      let lastError: any = null;
+
+      while (retries > 0) {
+        try {
+          const token = await getToken();
+          const chats = await getChats();
+          setChats(chats);
+          setError(null);
+          setLoadingChats(false);
+          return; // Success, exit
+        } catch (e) {
+          lastError = e;
+          retries--;
+          if (retries > 0) {
+            console.warn(`[Chat Load] Retry attempt ${4 - retries}, ${retries} remaining...`);
+            await new Promise(resolve => setTimeout(resolve, 1000 * (4 - retries))); // Delay before retry
+          }
+        }
       }
+
+      // All retries failed
+      console.error("[Chat Load] Failed after 3 retries:", lastError);
+      setError("Failed to load chats");
+      setLoadingChats(false);
     }
+
     loadChats();
   }, [getToken]);
 
