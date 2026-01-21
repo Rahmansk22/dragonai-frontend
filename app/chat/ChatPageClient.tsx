@@ -216,7 +216,14 @@ function ChatPageClient() {
                   Dragon <span className="ml-2 font-light text-white/70">AI</span>
                 </span>
               </div>
-              <div className="flex-1 overflow-hidden p-3 lg:p-6" style={{ paddingBottom: windowWidth !== null && windowWidth < 640 ? 80 : undefined }}>
+              <div 
+                className="flex-1 overflow-hidden p-3 lg:p-6" 
+                style={{ 
+                  paddingBottom: windowWidth !== null && windowWidth < 640 
+                    ? `max(60px, calc(env(safe-area-inset-bottom) + 20px))` 
+                    : undefined 
+                }}
+              >
                 {loadingChats ? (
                   <div className="flex items-center justify-center h-full">
                     <Spinner size={48} />
