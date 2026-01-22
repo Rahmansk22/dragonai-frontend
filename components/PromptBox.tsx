@@ -18,7 +18,8 @@ export default function PromptBox({
   onToggleCustomMode: () => void,
   onOpenCustomBotModal: () => void
 }) {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+  // Require a deployed API base URL; do not fall back to localhost so mobile data can reach it
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [value, setValue] = useState("");
   const [selectedModel, setSelectedModel] = useState<string>("groq");
