@@ -214,7 +214,7 @@ function ChatPageClient() {
                 className="flex-1 overflow-hidden p-3 lg:p-6" 
                 style={{ 
                   paddingBottom: windowWidth !== null && windowWidth < 640 
-                    ? `max(60px, calc(env(safe-area-inset-bottom) + 20px))` 
+                    ? `calc(env(safe-area-inset-bottom) + 12px)` 
                     : undefined 
                 }}
               >

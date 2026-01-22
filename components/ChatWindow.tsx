@@ -208,7 +208,7 @@ export default function ChatWindow({
   }
 
   return (
-    <div className="h-full flex flex-col pb-safe">
+    <div className="h-full flex flex-col">
       {!chatId ? (
         <div className="flex-1 flex flex-col items-center justify-center bg-[#242526] w-full min-h-[100vh] px-4">
           <div className="flex flex-col items-center justify-center w-full max-w-[480px] animate-fade-in">
@@ -227,7 +227,7 @@ export default function ChatWindow({
         </div>
       ) : (
         <div
-          className="flex-1 p-3 sm:p-4 lg:p-6 pt-14 sm:pt-0 overflow-y-auto space-y-4 sm:space-y-6 pb-6 relative bg-[#242526] hide-scrollbar"
+          className="flex-1 p-3 sm:p-4 lg:p-6 pt-12 sm:pt-0 overflow-y-auto space-y-4 sm:space-y-6 pb-3 relative bg-[#242526] hide-scrollbar"
           ref={scrollContainerRef}
         >
           {/* Show greeting only if there are no messages in the chat */}
