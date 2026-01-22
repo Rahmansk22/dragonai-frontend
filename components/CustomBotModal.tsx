@@ -32,8 +32,8 @@ export default function CustomBotModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="relative bg-[#242526] border border-white/20 rounded-2xl shadow-2xl p-8 w-full max-w-md animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <div className="relative bg-[#242526] border border-white/20 rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 w-full max-w-sm sm:max-w-md animate-fade-in">
         <button
           className="absolute top-4 right-4 text-white/60 hover:text-white text-2xl font-bold"
           onClick={onClose}

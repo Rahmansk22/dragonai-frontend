@@ -153,7 +153,7 @@ export default function ProfilePage() {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-black/80 relative">
-      <div className="w-full max-w-2xl bg-[#232324] rounded-3xl shadow-2xl border border-white/10 p-0 mx-2 sm:mx-4 md:mx-auto"
+      <div className="w-full max-w-2xl bg-[#232324] rounded-3xl shadow-2xl border border-white/10 p-4 sm:p-6 md:p-8 mx-auto"
         style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)', maxHeight: '90vh', overflow: 'hidden' }}>
         {/* Top Bar */}
         <div className="flex flex-col items-start px-4 sm:px-8 py-4 sm:py-6 border-b border-white/10 bg-[#232324] gap-1 sm:gap-2 w-full">

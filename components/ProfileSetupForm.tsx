@@ -18,7 +18,7 @@ export default function ProfileSetupForm({ onSubmit, loading }: { onSubmit: (nam
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#242526] via-zinc-900 to-zinc-950">
       <form
         onSubmit={handleSubmit}
-        className="relative w-full max-w-md p-8 rounded-3xl shadow-2xl bg-gradient-to-br from-zinc-900 via-[#242526] to-zinc-950 border border-zinc-800 backdrop-blur-lg"
+        className="relative w-full max-w-sm sm:max-w-md p-4 sm:p-6 md:p-8 rounded-3xl shadow-2xl bg-gradient-to-br from-zinc-900 via-[#242526] to-zinc-950 border border-zinc-800 backdrop-blur-lg"
         style={{ boxShadow: "0 8px 40px 0 #00f5ff33, 0 1.5px 8px 0 #00f5ff44, 0 0 0 1.5px #222 inset" }}
       >
         <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-500 rounded-full shadow-2xl p-2" style={{ boxShadow: "0 0 40px 10px #00f5ff55" }}>

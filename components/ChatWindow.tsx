@@ -210,7 +210,7 @@ export default function ChatWindow({
   return (
     <div className="h-full flex flex-col">
       {!chatId ? (
-        <div className="flex-1 flex flex-col items-center justify-center bg-[#242526] w-full min-h-[100vh] px-4">
+        <div className="flex-1 flex flex-col items-center justify-center bg-[#242526] w-full min-h-screen px-4">
           <div className="flex flex-col items-center justify-center w-full max-w-[480px] animate-fade-in">
             <div className="text-white/80 text-2xl font-extrabold mb-6 text-center">Welcome to Dragon AI!</div>
             <button

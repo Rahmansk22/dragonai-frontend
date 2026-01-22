@@ -84,7 +84,7 @@ export default function Sidebar({
   return (
     <aside
       ref={sidebarRef}
-      className="flex flex-col flex-1 w-60 p-4 rounded-2xl bg-[#242526] backdrop-blur-xl border-r border-white/10 fixed lg:relative z-50 h-full transition-all duration-300"
+      className="flex flex-col flex-1 w-full sm:w-60 p-4 rounded-2xl bg-[#242526] backdrop-blur-xl border-r border-white/10 fixed lg:relative z-50 h-full transition-all duration-300"
       style={{ minWidth: 0, height: '100vh', top: 0, left: 0 }}
     >
       {/* ...existing code... */}
