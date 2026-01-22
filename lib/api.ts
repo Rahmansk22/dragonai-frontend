@@ -121,7 +121,7 @@ export async function saveCustomBot(bot: { name: string; persona: string; knowle
 
 // Get current user profile
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://dragonai-backend.up.railway.app";
 
 export async function getProfile(token: string) {
     console.log('[API] getProfile token:', token);

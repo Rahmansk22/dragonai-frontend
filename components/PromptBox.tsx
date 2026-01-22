@@ -18,8 +18,8 @@ export default function PromptBox({
   onToggleCustomMode: () => void,
   onOpenCustomBotModal: () => void
 }) {
-  // Require a deployed API base URL; do not fall back to localhost so mobile data can reach it
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+  // Use deployed API base URL; default to public Railway backend
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://dragonai-backend.up.railway.app";
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [value, setValue] = useState("");
   const [selectedModel, setSelectedModel] = useState<string>("groq");

@@ -1,7 +1,7 @@
 module.exports = {
   async rewrites() {
-    // Require a deployed/public API base URL; avoid localhost fallback so mobile data can reach it
-    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+    // Default to public Railway backend; can be overridden via NEXT_PUBLIC_API_BASE_URL
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://dragonai-backend.up.railway.app';
     return [
       {
         source: '/api/:path*',
